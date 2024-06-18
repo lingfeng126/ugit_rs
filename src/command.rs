@@ -16,5 +16,11 @@ pub enum Commands{
     },
     CatFile {
         hash : String
+    },
+    WriteTree {
+        directory: String
+    },
+    ReadTree {
+        hash: String
     }
 }
