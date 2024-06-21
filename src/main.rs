@@ -16,6 +16,7 @@ fn main() {
         Some(command::Commands::Commit{ message }) => {cli::commit(message);},
         Some(command::Commands::Log{ hash }) => {cli::log(hash);}, 
         Some(command::Commands::Checkout{ hash }) => {cli::check_out(hash);}, 
+        Some(command::Commands::Tag{ name, hash }) => {cli::tag(name, hash);}, 
         None => panic!("Unknown command")
     }
 }

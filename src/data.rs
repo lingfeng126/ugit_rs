@@ -31,10 +31,22 @@ pub fn get_object(hash: &String, expected: ObjectTypes) -> Vec<u8>{
     
 }
 
+pub fn set_ref(oid: &String, ref_: String){
+    std::fs::write(format!(".ugit/refs/{}", ref_), oid).unwrap();
+}
+
 pub fn set_head(oid: &String){
-    std::fs::write(".ugit/HEAD", oid).unwrap();
+    set_ref(oid, "HEAD".to_string())
+}
+
+pub fn get_ref(ref_: String) -> Option<String>{
+    if let Ok(content) = std::fs::read_to_string(format!(".ugit/refs/{}", ref_)){
+        return Some(content)
+    }
+    None
 }
 
 pub fn get_head() -> String{
-    std::fs::read_to_string(".ugit/HEAD").unwrap().to_string()
+    get_ref("HEAD".to_string()).unwrap_or("".to_string())
 }
+

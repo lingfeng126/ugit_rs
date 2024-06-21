@@ -1,6 +1,6 @@
 use std::fmt::Formatter;
 
-use crate::cli;
+use crate::data;
 
 pub enum ObjectTypes{
     Blob = 0,
@@ -36,9 +36,34 @@ impl Commit{
         }
     }
 
+    pub fn from_oid(oid: &String) -> Self{
+        let commit = data::get_object(oid, ObjectTypes::Commit);
+        let content = String::from_utf8(commit).unwrap();
+        let mut content_iter = content.split("\n").into_iter();
+        let mut tree = "";
+        let mut parent = None;
+        for line in content_iter.by_ref(){
+            if line.len() < 1 {
+                break
+            }
+            let mut loc = line.splitn(2, " ");
+            let key = loc.next().unwrap();
+            let value = loc.next().unwrap();
+            if key == "tree"{
+                tree = value;
+            }else if  key == "parent" {
+                if value.trim().len() > 1{
+                    parent = Some(value.to_string());
+                }
+            }
+        }
+        let message = content_iter.fold(String::new(), |a, b| a + b);
+        Self::new(tree.to_string(), parent, message)
+    }
+
     pub fn get_parent(&self) -> Option<Self>{
         match &self.parent{
-            Some(oid) => Some(cli::get_commit(oid)),
+            Some(oid) => Some(Self::from_oid(oid)),
             None => None
         }
     }

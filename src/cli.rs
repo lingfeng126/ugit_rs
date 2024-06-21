@@ -17,6 +17,7 @@ pub fn init(){
     println!("Creating .ugit directory...");
     fs::create_dir(".ugit").unwrap();
     fs::create_dir_all(".ugit/objects").unwrap();
+    fs::create_dir_all(".ugit/refs").unwrap();
 }
 
 pub fn hash_object<P: AsRef<std::path::Path>>(path: P) -> String{
@@ -97,38 +98,16 @@ pub fn commit(message: &String){
     content.push_str(message);
     let commit_id = data::hash_object(content.into_bytes(), base::ObjectTypes::Commit);
     data::set_head(&commit_id);
-    println!("{}\n", get_commit(&commit_id))
+    println!("{}\n", Commit::from_oid(&commit_id))
 }
 
-pub fn get_commit(oid: &String) -> Commit{
-    let commit = data::get_object(oid, base::ObjectTypes::Commit);
-    let content = String::from_utf8(commit).unwrap();
-    let mut content_iter = content.split("\n").into_iter();
-    let mut tree = "";
-    let mut parent = None;
-    for line in content_iter.by_ref(){
-        if line.len() < 1 {
-            break
-        }
-        let mut loc = line.splitn(2, " ");
-        let key = loc.next().unwrap();
-        let value = loc.next().unwrap();
-        if key == "tree"{
-            tree = value;
-        }else if  key == "parent" {
-            if value.trim().len() > 1{
-                parent = Some(value.to_string());
-            }
-        }
-    }
-    let message = content_iter.fold(String::new(), |a, b| a + b);
-    Commit::new(tree.to_string(), parent, message)
-}
+
 
 pub fn log(hash: &Option<String>) {
     let head = data::get_head();
     let oid = hash.as_ref().unwrap_or(&head);
-    let mut commit_obj = get_commit(&oid);
+    println!("{}\n", &oid);
+    let mut commit_obj = Commit::from_oid(&oid);
     loop{
         println!("{}\n", commit_obj);
         match commit_obj.get_parent(){
@@ -141,7 +120,12 @@ pub fn log(hash: &Option<String>) {
 }
 
 pub fn check_out(hash: &String){
-    let commit = get_commit(hash);
+    let commit_id = data::get_ref(hash.clone()).unwrap_or(hash.clone());
+    let commit = Commit::from_oid(&commit_id);
     read_tree(commit.get_tree());
-    data::set_head(hash);
+    data::set_head(commit.get_tree());
+}
+
+pub fn tag(name: &String, hash: &String){
+    data::set_ref(hash, name.clone())
 }

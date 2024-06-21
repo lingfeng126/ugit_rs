@@ -29,7 +29,11 @@ pub enum Commands{
     Log {
         hash: Option<String>
     },
-    Checkout{
+    Checkout {
+        hash: String
+    },
+    Tag {
+        name: String,
         hash: String
     }
 }
