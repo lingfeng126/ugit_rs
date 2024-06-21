@@ -22,5 +22,11 @@ pub enum Commands{
     },
     ReadTree {
         hash: String
+    },
+    Commit {
+        message: String
+    },
+    Log {
+        hash: Option<String>
     }
 }

@@ -1,6 +1,8 @@
 use std::fs;
 use std::path;
+use crate::base::Commit;
 use crate::data;
+use crate::base;
 
 pub fn init(){
     let dirpath = path::Path::new(".ugit");
@@ -20,11 +22,11 @@ pub fn init(){
 pub fn hash_object<P: AsRef<std::path::Path>>(path: P) -> String{
     // save objects
     let bytes = std::fs::read(path).unwrap();
-    data::hash_object(bytes, data::ObjectTypes::Blob)
+    data::hash_object(bytes, base::ObjectTypes::Blob)
 }
 
 pub fn cat_file(hash: &String){
-    let bytes = data::get_object(hash, data::ObjectTypes::Blob);
+    let bytes = data::get_object(hash, base::ObjectTypes::Blob);
     println!("{:?}", bytes)
 }
 
@@ -46,15 +48,15 @@ pub fn write_tree(directory: &String) -> String{
         }
     }
     let result = temp.join("\n");
-    data::hash_object(result.into_bytes(), data::ObjectTypes::Tree)
+    data::hash_object(result.into_bytes(), base::ObjectTypes::Tree)
 }
 
-pub fn ignored_directory(directory: &std::path::PathBuf) -> bool{
+fn ignored_directory(directory: &std::path::PathBuf) -> bool{
     directory.ends_with(".ugit") || directory.ends_with(".git") 
 }
 
 pub fn read_tree(hash: &String){
-    let tree_raw = data::get_object(hash, data::ObjectTypes::Tree);
+    let tree_raw = data::get_object(hash, base::ObjectTypes::Tree);
     let tree = std::string::String::from_utf8(tree_raw).unwrap();
 
     for line in tree.split("\n"){
@@ -65,7 +67,7 @@ pub fn read_tree(hash: &String){
         
         match type_{
             "Blob" => {
-                let bytes = data::get_object(&hash, data::ObjectTypes::Blob);
+                let bytes = data::get_object(&hash, base::ObjectTypes::Blob);
                 if std::path::Path::new(filename).exists(){
                     fs::remove_file(filename).unwrap();
                 }
@@ -79,6 +81,61 @@ pub fn read_tree(hash: &String){
                 read_tree(&hash);
             }
             _ => panic!("Unknown file type, illegal object!")
+        }
+    }
+}
+
+pub fn commit(message: &String){
+    let mut content = String::new();
+    let parent = data::get_head();
+    let hash = write_tree(&".".to_owned());
+    content.push_str(&format!("tree {}\n", hash));
+    if !parent.is_empty(){
+        content.push_str(&format!("parent {}\n", parent));
+    }
+    content.push_str("\n");
+    content.push_str(message);
+    let commit_id = data::hash_object(content.into_bytes(), base::ObjectTypes::Commit);
+    data::set_head(&commit_id);
+    println!("{}", get_commit(&commit_id))
+}
+
+pub fn get_commit(oid: &String) -> Commit{
+    let commit = data::get_object(oid, base::ObjectTypes::Commit);
+    let content = String::from_utf8(commit).unwrap();
+    let mut content_iter = content.split("\n").into_iter();
+    let mut hash = "";
+    let mut parent = None;
+    for line in content_iter.by_ref(){
+        if line.len() < 1 {
+            break
+        }
+        let mut loc = line.splitn(2, " ");
+        let key = loc.next().unwrap();
+        let value = loc.next().unwrap();
+        if key == "tree"{
+            hash = value;
+        }else if  key == "parent" {
+            if value.trim().len() > 1{
+                parent = Some(value.to_string());
+            }
+        }
+    }
+    let message = content_iter.fold(String::new(), |a, b| a + b);
+    Commit::new(hash.to_string(), parent, message)
+}
+
+pub fn log(hash: &Option<String>) {
+    let head = data::get_head();
+    let oid = hash.as_ref().unwrap_or(&head);
+    let mut commit_obj = get_commit(&oid);
+    loop{
+        println!("{}\n", commit_obj);
+        match commit_obj.get_parent(){
+            Some(commit) => {
+                commit_obj = commit;
+            },
+            None => break
         }
     }
 }

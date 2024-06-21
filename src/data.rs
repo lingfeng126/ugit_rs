@@ -1,21 +1,8 @@
-use std::{fmt::Formatter, io::{Read, Write}};
+use std::io::{Read, Write};
 
 use sha256;
 
-pub enum ObjectTypes{
-    Blob = 0,
-    Tree = 1
-}
-
-impl std::fmt::Display for ObjectTypes{
-    fn fmt(&self, f:&mut Formatter) -> std::fmt::Result{
-        match self{
-            Self::Blob => write!(f, "{}", "blob"),
-            _ => panic!("Unknown type!")
-        }
-    }
-}
-
+use crate::base::ObjectTypes;
 
 pub fn hash_object(bytes: Vec<u8>, expected:ObjectTypes) -> String{
     let name = sha256::digest(&bytes);
@@ -42,4 +29,12 @@ pub fn get_object(hash: &String, expected: ObjectTypes) -> Vec<u8>{
         content[1..].to_vec()
     }
     
+}
+
+pub fn set_head(oid: &String){
+    std::fs::write(".ugit/HEAD", oid).unwrap();
+}
+
+pub fn get_head() -> String{
+    std::fs::read_to_string(".ugit/HEAD").unwrap().to_string()
 }
