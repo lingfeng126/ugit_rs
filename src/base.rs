@@ -18,21 +18,21 @@ impl std::fmt::Display for ObjectTypes{
 }
 
 pub struct Commit{
-    id: String,
+    tree: String,
     parent: Option<String>,
     message: String
 }
 
 impl std::fmt::Display for Commit{
     fn fmt(&self, f:&mut Formatter) -> std::fmt::Result{
-        write!(f, "hash: {}\nparent: {}\nmessage:{} ", self.id, self.parent.as_ref().unwrap_or(&"".to_string()), self.message)
+        write!(f, "tree: {}\nparent: {}\nmessage:{} ", self.tree, self.parent.as_ref().unwrap_or(&"".to_string()), self.message)
     }
 }
 
 impl Commit{
-    pub fn new(id: String, parent:Option<String>, message:String) -> Self{
+    pub fn new(tree: String, parent:Option<String>, message:String) -> Self{
         Commit{
-            id, parent, message
+            tree, parent, message
         }
     }
 
@@ -41,5 +41,9 @@ impl Commit{
             Some(oid) => Some(cli::get_commit(oid)),
             None => None
         }
+    }
+
+    pub fn get_tree(&self) -> &String{
+        &self.tree
     }
 }

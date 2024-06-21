@@ -27,7 +27,7 @@ pub fn hash_object<P: AsRef<std::path::Path>>(path: P) -> String{
 
 pub fn cat_file(hash: &String){
     let bytes = data::get_object(hash, base::ObjectTypes::Blob);
-    println!("{:?}", bytes)
+    println!("{:?}\n", bytes)
 }
 
 pub fn write_tree(directory: &String) -> String{
@@ -97,14 +97,14 @@ pub fn commit(message: &String){
     content.push_str(message);
     let commit_id = data::hash_object(content.into_bytes(), base::ObjectTypes::Commit);
     data::set_head(&commit_id);
-    println!("{}", get_commit(&commit_id))
+    println!("{}\n", get_commit(&commit_id))
 }
 
 pub fn get_commit(oid: &String) -> Commit{
     let commit = data::get_object(oid, base::ObjectTypes::Commit);
     let content = String::from_utf8(commit).unwrap();
     let mut content_iter = content.split("\n").into_iter();
-    let mut hash = "";
+    let mut tree = "";
     let mut parent = None;
     for line in content_iter.by_ref(){
         if line.len() < 1 {
@@ -114,7 +114,7 @@ pub fn get_commit(oid: &String) -> Commit{
         let key = loc.next().unwrap();
         let value = loc.next().unwrap();
         if key == "tree"{
-            hash = value;
+            tree = value;
         }else if  key == "parent" {
             if value.trim().len() > 1{
                 parent = Some(value.to_string());
@@ -122,7 +122,7 @@ pub fn get_commit(oid: &String) -> Commit{
         }
     }
     let message = content_iter.fold(String::new(), |a, b| a + b);
-    Commit::new(hash.to_string(), parent, message)
+    Commit::new(tree.to_string(), parent, message)
 }
 
 pub fn log(hash: &Option<String>) {
@@ -138,4 +138,10 @@ pub fn log(hash: &Option<String>) {
             None => break
         }
     }
+}
+
+pub fn check_out(hash: &String){
+    let commit = get_commit(hash);
+    read_tree(commit.get_tree());
+    data::set_head(hash);
 }

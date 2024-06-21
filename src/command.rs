@@ -28,5 +28,8 @@ pub enum Commands{
     },
     Log {
         hash: Option<String>
+    },
+    Checkout{
+        hash: String
     }
 }
