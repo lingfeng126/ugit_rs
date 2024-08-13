@@ -15,7 +15,7 @@ pub enum Commands{
         path : String
     },
     CatFile {
-        hash : String
+        ref_ : String
     },
     WriteTree {
         directory: String
@@ -30,7 +30,7 @@ pub enum Commands{
         hash: Option<String>
     },
     Checkout {
-        hash: String
+        ref_: String
     },
     Tag {
         name: String,

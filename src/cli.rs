@@ -1,6 +1,7 @@
 use std::fs;
 use std::path;
 use crate::base::Commit;
+use crate::base::ObjectTypes;
 use crate::data;
 use crate::base;
 
@@ -60,6 +61,8 @@ pub fn read_tree(hash: &String){
     let tree_raw = data::get_object(hash, base::ObjectTypes::Tree);
     let tree = std::string::String::from_utf8(tree_raw).unwrap();
 
+    // delete existing files before checkout
+    
     for line in tree.split("\n"){
         let mut iter = line.split(' ');
         let type_ = iter.next().unwrap();
@@ -119,13 +122,20 @@ pub fn log(hash: &Option<String>) {
     }
 }
 
-pub fn check_out(hash: &String){
-    let commit_id = data::get_ref(hash.clone()).unwrap_or(hash.clone());
+pub fn check_out(ref_: &String){
+    let commit_id = data::get_ref(ref_.clone()).unwrap_or(ref_.clone());
+    println!("Checking out {}", commit_id);
     let commit = Commit::from_oid(&commit_id);
     read_tree(commit.get_tree());
     data::set_head(commit.get_tree());
 }
 
+
+
 pub fn tag(name: &String, hash: &String){
-    data::set_ref(hash, name.clone())
+    if let Ok(_) = data::test_object_type(hash, ObjectTypes::Commit){
+        data::set_ref(hash, name.clone())
+    }else{
+        println!("{} is not a commit!", hash)
+    }
 }
