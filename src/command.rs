@@ -1,5 +1,5 @@
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, arg};
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
@@ -27,7 +27,8 @@ pub enum Commands{
         message: String
     },
     Log {
-        hash: Option<String>
+        #[arg(default_value_t=String::from("HEAD"))]
+        hash: String
     },
     Checkout {
         ref_: String

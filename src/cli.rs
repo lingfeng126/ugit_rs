@@ -62,7 +62,7 @@ pub fn read_tree(hash: &String){
     let tree = std::string::String::from_utf8(tree_raw).unwrap();
 
     // delete existing files before checkout
-    
+
     for line in tree.split("\n"){
         let mut iter = line.split(' ');
         let type_ = iter.next().unwrap();
@@ -106,9 +106,7 @@ pub fn commit(message: &String){
 
 
 
-pub fn log(hash: &Option<String>) {
-    let head = data::get_head();
-    let oid = hash.as_ref().unwrap_or(&head);
+pub fn log(oid: String) {
     println!("{}\n", &oid);
     let mut commit_obj = Commit::from_oid(&oid);
     loop{

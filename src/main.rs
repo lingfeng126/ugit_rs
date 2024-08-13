@@ -20,7 +20,7 @@ fn main() {
             cli::read_tree(&hash);
         },
         Some(command::Commands::Commit{ message }) => {cli::commit(message);},
-        Some(command::Commands::Log{ hash }) => {cli::log(hash);}, 
+        Some(command::Commands::Log{ hash }) => {cli::log(hash.to_string());}, 
         Some(command::Commands::Checkout{ ref_ }) => {
             let ref_ = data::get_ref(ref_.clone()).unwrap_or(ref_.to_string());
             cli::check_out(&ref_);
