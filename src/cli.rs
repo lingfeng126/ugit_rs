@@ -104,6 +104,12 @@ pub fn commit(message: &String){
     println!("{}\n", Commit::from_oid(&commit_id))
 }
 
+pub fn show(_ref: &String){
+    
+
+
+    ()
+}
 
 
 pub fn log(oid: String) {

@@ -5,6 +5,7 @@ use sha256;
 use crate::base::ObjectTypes;
 
 pub fn hash_object(bytes: Vec<u8>, expected:ObjectTypes) -> String{
+    // TODO use first 2 digits to divide the files into subdirectories
     let name = sha256::digest(&bytes);
     let mut file_name = ".ugit/objects/".to_owned();
     file_name.push_str(&name);
@@ -15,23 +16,27 @@ pub fn hash_object(bytes: Vec<u8>, expected:ObjectTypes) -> String{
 }
 
 pub fn get_object(hash: &String, expected: ObjectTypes) -> Vec<u8>{
+    // Read contents from a object
     let path = format!(".ugit/objects/{hash}");
     if let Ok(mut file) = std::fs::File::open(&path){
         let metadata = std::fs::metadata(&path).unwrap();
         let mut content = vec![0; metadata.len() as usize];
 
         file.read(&mut content).unwrap();
+
+        // first digit is the object type
         let exp = expected as u8;
         if content[0] != exp{
             panic!("Object type is not as expected: {:?} {:?}", content[0], exp)
         }else{
-            // std::string::String::from_utf8().unwrap()
             content[1..].to_vec()
         }
     }else{
         panic!("File not found! {}", path)
     }
 }
+
+// pub fn get_object_any(hash: &String) -> 
 
 pub fn test_object_type(hash: &String, expected:ObjectTypes) -> Result<u8, String>{
     let path = format!(".ugit/objects/{hash}");
@@ -70,4 +75,8 @@ pub fn get_ref(ref_: String) -> Option<String>{
 
 pub fn get_head() -> String{
     get_ref("HEAD".to_string()).unwrap_or("".to_string())
+}
+
+pub fn get_type(content: &String) -> ObjectTypes{
+    ObjectTypes::from(content.bytes().nth(0).unwrap())
 }

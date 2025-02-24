@@ -10,9 +10,8 @@ fn main() {
     match &cmd.command{
         Some(command::Commands::Init) => cli::init(),
         Some(command::Commands::HashObject{ path }) => {cli::hash_object(path);},
-        Some(command::Commands::CatFile{ ref_ }) => {
-            let ref_ = data::get_ref(ref_.clone()).unwrap_or(ref_.to_string());
-            cli::cat_file(&ref_);
+        Some(command::Commands::CatFile{ hash }) => {
+            cli::cat_file(&hash);
         },
         Some(command::Commands::WriteTree{ directory }) => {cli::write_tree(directory);},
         Some(command::Commands::ReadTree{ hash }) => {
@@ -29,6 +28,10 @@ fn main() {
             let hash = data::get_ref(hash.clone()).unwrap_or(hash.to_string());
             cli::tag(name, &hash);
         }, 
+        Some(command::Commands::Show{ ref_ }) => {
+            let ref_: String = data::get_ref(ref_.clone()).unwrap_or(ref_.to_string());
+            cli::show(&ref_);
+        }
         None => panic!("Unknown command")
     }
 }

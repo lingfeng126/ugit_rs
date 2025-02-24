@@ -15,7 +15,7 @@ pub enum Commands{
         path : String
     },
     CatFile {
-        ref_ : String
+        hash : String
     },
     WriteTree {
         directory: String
@@ -36,5 +36,9 @@ pub enum Commands{
     Tag {
         name: String,
         hash: String
+    },
+    Show {
+        #[arg(default_value_t=String::from("HEAD"))]
+        ref_: String
     }
 }
