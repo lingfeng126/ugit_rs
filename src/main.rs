@@ -3,7 +3,7 @@ use clap::Parser;
 mod command;
 mod cli;
 mod data;
-mod base;
+mod models;
 
 fn main() {
     let cmd = command::Cli::parse();

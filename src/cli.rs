@@ -1,9 +1,8 @@
 use std::fs;
 use std::path;
-use crate::base::Commit;
-use crate::base::ObjectTypes;
+use crate::models::Commit;
+use crate::models::ObjectTypes;
 use crate::data;
-use crate::base;
 
 pub fn init(){
     let dirpath = path::Path::new(".ugit");
@@ -24,11 +23,11 @@ pub fn init(){
 pub fn hash_object<P: AsRef<std::path::Path>>(path: P) -> String{
     // save objects
     let bytes = std::fs::read(path).unwrap();
-    data::hash_object(bytes, base::ObjectTypes::Blob)
+    data::hash_object(bytes, ObjectTypes::Blob)
 }
 
 pub fn cat_file(hash: &String){
-    let bytes = data::get_object(hash, base::ObjectTypes::Blob);
+    let bytes = data::get_object(hash, ObjectTypes::Blob);
     println!("{:?}\n", bytes)
 }
 
@@ -50,7 +49,7 @@ pub fn write_tree(directory: &String) -> String{
         }
     }
     let result = temp.join("\n");
-    data::hash_object(result.into_bytes(), base::ObjectTypes::Tree)
+    data::hash_object(result.into_bytes(), ObjectTypes::Tree)
 }
 
 fn ignored_directory(directory: &std::path::PathBuf) -> bool{
@@ -58,7 +57,7 @@ fn ignored_directory(directory: &std::path::PathBuf) -> bool{
 }
 
 pub fn read_tree(hash: &String){
-    let tree_raw = data::get_object(hash, base::ObjectTypes::Tree);
+    let tree_raw = data::get_object(hash, ObjectTypes::Tree);
     let tree = std::string::String::from_utf8(tree_raw).unwrap();
 
     // delete existing files before checkout
@@ -71,7 +70,7 @@ pub fn read_tree(hash: &String){
         
         match type_{
             "Blob" => {
-                let bytes = data::get_object(&hash, base::ObjectTypes::Blob);
+                let bytes = data::get_object(&hash, ObjectTypes::Blob);
                 if std::path::Path::new(filename).exists(){
                     fs::remove_file(filename).unwrap();
                 }
@@ -99,7 +98,7 @@ pub fn commit(message: &String){
     }
     content.push_str("\n");
     content.push_str(message);
-    let commit_id = data::hash_object(content.into_bytes(), base::ObjectTypes::Commit);
+    let commit_id = data::hash_object(content.into_bytes(), ObjectTypes::Commit);
     data::set_head(&commit_id);
     println!("{}\n", Commit::from_oid(&commit_id))
 }
