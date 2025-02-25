@@ -2,7 +2,7 @@ use std::io::{Read, Write};
 
 use sha256;
 
-use crate::base::ObjectTypes;
+use crate::models::ObjectTypes;
 
 pub fn hash_object(bytes: Vec<u8>, expected:ObjectTypes) -> String{
     // TODO use first 2 digits to divide the files into subdirectories
